@@ -21,6 +21,12 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('A user connected');
 
+  // Ovde možeš dodati više događaja za socket
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
+
 // Pokrećemo server na portu 3000
 server.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
