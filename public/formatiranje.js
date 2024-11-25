@@ -9,7 +9,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const nicknameDiv = document.getElementById("nickname");
     const guestDiv = document.getElementById("guest");
 
-    let selectedColor = "#808080" // Podrazumevana boja
+    let selectedColor = "#808080"; // Podrazumevana boja
+    let isBold = false;
+    let isItalic = false;
 
     // Funkcija za generisanje imena gosta
     function generateGuestName() {
@@ -21,9 +23,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const guestName = generateGuestName();
         const guestElement = document.createElement("div");
         guestElement.textContent = guestName;
-        guestElement.style.fontWeight = "bold";
-        guestElement.style.fontStyle = "italic";
-        guestElement.style.color = selectedColor; // Postavljamo boju na goste
+        guestElement.classList.add("guest"); // Dodajemo CSS klasu
         guestDiv.appendChild(guestElement);
     }
 
@@ -35,28 +35,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Funkcija za primenu bold i italic stila u unosu poruke
     boldBtn.addEventListener("click", function() {
-        if (chatInput.style.fontWeight === "bold") {
-            chatInput.style.fontWeight = "normal";
-        } else {
-            chatInput.style.fontWeight = "bold";
-        }
+        isBold = !isBold;
+        updateMessageStyle();
     });
 
     italicBtn.addEventListener("click", function() {
-        if (chatInput.style.fontStyle === "italic") {
-            chatInput.style.fontStyle = "normal";
-        } else {
-            chatInput.style.fontStyle = "italic";
-        }
+        isItalic = !isItalic;
+        updateMessageStyle();
     });
+
+    // Ažuriranje stila poruke u unosu
+    function updateMessageStyle() {
+        chatInput.style.fontWeight = isBold ? "bold" : "normal";
+        chatInput.style.fontStyle = isItalic ? "italic" : "normal";
+    }
 
     // Funkcija za slanje poruke sa odabranim stilovima i bojama
     function sendMessage(message, userName) {
         const messageElement = document.createElement("div");
         messageElement.textContent = `${userName}: ${message}`;
         messageElement.style.color = selectedColor;
-        messageElement.style.fontWeight = chatInput.style.fontWeight;
-        messageElement.style.fontStyle = chatInput.style.fontStyle;
+        messageElement.style.fontWeight = isBold ? "bold" : "normal";
+        messageElement.style.fontStyle = isItalic ? "italic" : "normal";
         messageArea.appendChild(messageElement);
     }
 
@@ -64,9 +64,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function addUser(username) {
         const userElement = document.createElement("div");
         userElement.textContent = username;
-        userElement.style.fontWeight = "bold";
-        userElement.style.fontStyle = "italic";
-        userElement.style.color = selectedColor; // Postavljamo boju korisnika
+        userElement.classList.add("user"); // Dodajemo CSS klasu
         nicknameDiv.appendChild(userElement);
     }
 
