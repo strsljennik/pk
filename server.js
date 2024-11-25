@@ -2,6 +2,7 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const { getUsers, users } = require('./user'); // Import user.js modula
 
 // Kreiramo aplikaciju
 const app = express();
