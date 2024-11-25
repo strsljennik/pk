@@ -27,7 +27,8 @@ io.on('connection', (socket) => {
   });
 });
 
-// Pokrećemo server na portu 3000
-server.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
+// Pokretanje servera na definisanom portu
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server je pokrenut na portu ${PORT}`);
 });
