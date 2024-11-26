@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const { generateUserNumber, formatMessageWithColorStyle, getDefaultColor, getDefaultStyle } = require('./user');
+const { generateUserNumber, getDefaultColor, getDefaultStyle, formatMessageWithColorStyle } = require('./user');
 
 const app = express();
 const server = http.createServer(app);
@@ -11,33 +11,38 @@ app.use(express.static('public'));
 
 const users = {}; // Skladištenje korisnika po socket ID-u
 
+// Konekcija sa klijentom
 io.on('connection', (socket) => {
-  const user = generateUserNumber(); // Generiši korisnički broj
+  const userName = generateUserNumber(); // Generiši korisnički broj
   const userColor = getDefaultColor(); // Podrazumevana boja
   const userStyle = getDefaultStyle(); // Podrazumevani stil
 
-  users[socket.id] = { users: user, color: userColor, style: userStyle };
+  users[socket.id] = { username: userName, color: userColor, style: userStyle };
 
-  socket.emit('welcome', { user, userColor, userStyle });
-  io.emit('userConnected', user);
+  // Pošaljemo dobrodošlicu korisniku
+  socket.emit('welcome', { userName, userColor, userStyle });
+  io.emit('userConnected', userName); // Emituj kada se korisnik poveže
 
+  // Kada korisnik pošalje poruku
   socket.on('chatMessage', (data) => {
-    const currentUser = users[socket.id];
-    if (currentUser) {
-      const formattedMessage = formatMessageWithColorStyle(currentUser.user, data.message, currentUser.color, currentUser.style);
-      io.emit('message', formattedMessage);
+    const user = users[socket.id];
+    if (user) {
+      const formattedMessage = formatMessageWithColorStyle(user.username, data.message, user.color, user.style);
+      io.emit('message', formattedMessage); // Emituj poruku svim korisnicima
     }
   });
 
+  // Kada korisnik ode
   socket.on('disconnect', () => {
-    const currentUser = users[socket.id];
-    if (currentUser) {
-      io.emit('userDisconnected', currentUser.username);
-      delete users[socket.id];
+    const user = users[socket.id];
+    if (user) {
+      io.emit('userDisconnected', user.username); // Emituj kada korisnik napusti chat
+      delete users[socket.id]; // Ukloni korisnika iz liste
     }
   });
 });
 
+// Postavljanje servera na port
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server je pokrenut na portu ${PORT}`);
