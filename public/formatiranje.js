@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let isBold = false;
   let isItalic = false;
-  let selectedColor = '#808080';
+  let selectedColor = '#808080'; // Default color
   let guestName = '';
 
   // Dobrodošlica
@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function addUserToList(username) {
     const userElement = document.createElement('div');
     userElement.textContent = username;
+    userElement.style.fontWeight = isBold ? 'bold' : 'normal'; // Stilizovanje korisničkog imena
+    userElement.style.fontStyle = isItalic ? 'italic' : 'normal'; // Stilizovanje korisničkog imena
     usersDiv.appendChild(userElement);
   }
 
@@ -62,18 +64,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Prikazivanje poruka
+  // Prikazivanje poruka sa stilovima
   socket.on('message', (data) => {
     const messageElement = document.createElement('div');
-    messageElement.textContent = `${data.username}: ${data.message}`;
+    messageElement.textContent = `${data.username}: ${data.message} - ${data.timestamp}`; // Formatiranje sa vremenom
     messageElement.style.color = data.color;
     messageElement.style.fontWeight = data.styles.bold ? 'bold' : 'normal';
     messageElement.style.fontStyle = data.styles.italic ? 'italic' : 'normal';
     messageArea.appendChild(messageElement);
   });
 
-  // Upravljanje korisnicima
-  socket.on('userConnected', (username) => addUserToList(username));
+  // Upravljanje korisnicima (prikaz novih korisnika i odjavljivanje)
+  socket.on('userConnected', (username) => {
+    addUserToList(username);
+  });
   socket.on('userDisconnected', (username) => {
     const userElements = Array.from(usersDiv.children);
     userElements.forEach((el) => {
