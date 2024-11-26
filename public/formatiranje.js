@@ -9,14 +9,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let selectedColor = '#808080'; // Default color
   let guestName = '';
-  
+
   // Dobrodošlica
   socket.on('welcome', (data) => {
     guestName = data.guestName;
     selectedColor = data.guestColor;
-    chatInput.style.color = selectedColor;
+    updateStyles();
     addUserToList(guestName); // Dodavanje gosta u listu
   });
+
+  // Funkcija za ažuriranje stilova
+  function updateStyles() {
+    chatInput.style.color = selectedColor; // Boja za input
+    const userElements = usersDiv.children;
+    for (let user of userElements) {
+      user.style.color = selectedColor; // Ažuriraj boju svih korisnika
+    }
+    const messages = messageArea.children;
+    for (let message of messages) {
+      if (message.dataset.username === guestName) {
+        message.style.color = selectedColor; // Ažuriraj boju svih poruka korisnika
+      }
+    }
+  }
 
   // Dodavanje korisnika u listu sa default bold i italic stilovima
   function addUserToList(username) {
@@ -29,22 +44,14 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Otvoriti color picker kada korisnik klikne na dugme
-  colorBtn.addEventListener('click', function() {
-    colorPicker.click();  // Otvori color picker
+  colorBtn.addEventListener('click', function () {
+    colorPicker.click(); // Otvori color picker
   });
 
   // Promena boje za chat input, poruku i ime korisnika
   colorPicker.addEventListener('input', (e) => {
-    selectedColor = e.target.value;  // Uzmi novu boju
-
-    // Postavljanje boje za chat input
-    chatInput.style.color = selectedColor;
-
-    // Postavljanje boje za sve nove korisnike u listi
-    const users = usersDiv.children;
-    for (let user of users) {
-      user.style.color = selectedColor;
-    }
+    selectedColor = e.target.value; // Uzmi novu boju
+    updateStyles(); // Ažuriraj boju na svim relevantnim mestima
   });
 
   // Slanje poruke
@@ -68,9 +75,10 @@ document.addEventListener('DOMContentLoaded', function () {
   socket.on('message', (data) => {
     const messageElement = document.createElement('div');
     messageElement.textContent = `${data.username}: ${data.message}`;
-    messageElement.style.color = data.color;  // Boja poruke
+    messageElement.style.color = data.color; // Boja poruke
     messageElement.style.fontWeight = 'bold'; // Default bold stil
     messageElement.style.fontStyle = 'italic'; // Default italic stil
+    messageElement.dataset.username = data.username; // Čuvamo username za kasnije ažuriranje
     messageArea.appendChild(messageElement);
   });
 
