@@ -49,7 +49,7 @@ function changeUserColor(userId, color) {
   messages.forEach(message => {
     message.style.color = color;
   });
-  
+
   // Update boje na inputu za unos poruke
   const inputField = document.getElementById('chatInput');
   inputField.style.color = color;
