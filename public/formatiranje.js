@@ -5,15 +5,15 @@ document.addEventListener('DOMContentLoaded', function () {
   const colorBtn = document.getElementById('colorBtn');
   const chatInput = document.getElementById('chatInput');
   const messageArea = document.getElementById('messageArea');
-  const usersDiv = document.getElementById('users');
+  const usersDiv = document.getElementById('users'); // Lista korisnika
 
   let selectedColor = '#808080'; // Default color
   let currentUser = ''; // Trenutni korisnik
 
   // Dobrodošlica i dodavanje korisnika
   socket.on('welcome', (data) => {
-    currentUser = data.guestName;
-    selectedColor = data.guestColor;
+    currentUser = data.userName; // Dodeljujemo korisniku generisano ime
+    selectedColor = data.userColor; // Dodeljujemo boju korisniku
 
     // Postavi podrazumevani stil za unos
     chatInput.style.color = selectedColor;
