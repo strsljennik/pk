@@ -76,7 +76,7 @@ function handleSendMessage(socket, username, message, color, styles) {
     displayMessage(username, message, color, styles); // Prikazivanje poruke u chat prozoru
   }
 
-});
+};
 
 // Export funkcija za korišćenje u serveru
 module.exports = {
