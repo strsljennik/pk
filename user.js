@@ -36,19 +36,6 @@ function formatMessageWithColorStyle(username, message, color, styles) {
   };
 }
 
-// Funkcija za prikazivanje poruka u 'messageArea'
-function displayMessage(username, message, color, styles) {
-  const messageArea = document.getElementById('messageArea');
-  const messageDiv = document.createElement('div');
-  messageDiv.classList.add('message');
-  messageDiv.style.color = color;
-  messageDiv.style.fontWeight = styles.fontWeight;
-  messageDiv.style.fontStyle = styles.fontStyle;
-  messageDiv.textContent = formatMessage(username, message);
-  messageArea.appendChild(messageDiv);
-  messageArea.scrollTop = messageArea.scrollHeight; // Pomeri ka dnu kada se doda nova poruka
-}
-
 // Funkcija za promenu boje korisničkog imena i poruka
 function changeUserColor(userId, color) {
   // Update korisničkog imena u listi
@@ -70,13 +57,9 @@ function changeUserColor(userId, color) {
 
 // Slanje poruke sa Enter
 function handleSendMessage(socket, username, message, color, styles) {
-  if (message.trim() !== "") {
-    const formattedMessage = formatMessageWithColorStyle(username, message, color, styles);
-    socket.emit('chatMessage', formattedMessage);
-    displayMessage(username, message, color, styles); // Prikazivanje poruke u chat prozoru
-  }
-
-};
+  const formattedMessage = formatMessageWithColorStyle(username, message, color, styles);
+  socket.emit('chatMessage', formattedMessage);
+}
 
 // Export funkcija za korišćenje u serveru
 module.exports = {
