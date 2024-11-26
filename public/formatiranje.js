@@ -8,50 +8,51 @@ document.addEventListener('DOMContentLoaded', function () {
   const usersDiv = document.getElementById('users');
 
   let selectedColor = '#808080'; // Default color
-  let guestName = '';
+  let currentUser = ''; // Trenutni korisnik
 
-  // Dobrodošlica
+  // Dobrodošlica i dodavanje korisnika
   socket.on('welcome', (data) => {
-    guestName = data.guestName;
+    currentUser = data.guestName;
     selectedColor = data.guestColor;
-    updateStyles();
-    addUserToList(guestName); // Dodavanje gosta u listu
+
+    // Postavi podrazumevani stil za unos
+    chatInput.style.color = selectedColor;
+    chatInput.style.fontWeight = 'bold';
+    chatInput.style.fontStyle = 'italic';
+
+    // Dodaj korisnika u listu
+    addUserToList(currentUser, selectedColor);
   });
 
-  // Funkcija za ažuriranje stilova
-  function updateStyles() {
-    chatInput.style.color = selectedColor; // Boja za input
-    const userElements = usersDiv.children;
-    for (let user of userElements) {
-      user.style.color = selectedColor; // Ažuriraj boju svih korisnika
-    }
-    const messages = messageArea.children;
-    for (let message of messages) {
-      if (message.dataset.username === guestName) {
-        message.style.color = selectedColor; // Ažuriraj boju svih poruka korisnika
-      }
-    }
-  }
-
-  // Dodavanje korisnika u listu sa default bold i italic stilovima
-  function addUserToList(username) {
+  // Dodavanje korisnika u listu
+  function addUserToList(username, color) {
     const userElement = document.createElement('div');
     userElement.textContent = username;
-    userElement.style.fontWeight = 'bold'; // Default bold stil
-    userElement.style.fontStyle = 'italic'; // Default italic stil
-    userElement.style.color = selectedColor;  // Postavljanje boje korisničkog imena
+    userElement.style.color = color;
+    userElement.style.fontWeight = 'bold';
+    userElement.style.fontStyle = 'italic';
     usersDiv.appendChild(userElement);
   }
 
-  // Otvoriti color picker kada korisnik klikne na dugme
+  // Otvaranje color pickera
   colorBtn.addEventListener('click', function () {
-    colorPicker.click(); // Otvori color picker
+    colorPicker.click();
   });
 
-  // Promena boje za chat input, poruku i ime korisnika
+  // Promena boje
   colorPicker.addEventListener('input', (e) => {
-    selectedColor = e.target.value; // Uzmi novu boju
-    updateStyles(); // Ažuriraj boju na svim relevantnim mestima
+    selectedColor = e.target.value;
+
+    // Postavi boju za unos
+    chatInput.style.color = selectedColor;
+
+    // Promeni boju trenutnog korisnika u listi
+    const userElements = Array.from(usersDiv.children);
+    userElements.forEach((user) => {
+      if (user.textContent === currentUser) {
+        user.style.color = selectedColor;
+      }
+    });
   });
 
   // Slanje poruke
@@ -61,32 +62,32 @@ document.addEventListener('DOMContentLoaded', function () {
       const message = chatInput.value.trim();
       if (message) {
         socket.emit('chatMessage', {
-          username: guestName,
+          username: currentUser,
           message,
           color: selectedColor,
-          styles: { bold: true, italic: true }, // Poruka je po defaultu bold i italic
+          styles: { bold: true, italic: true },
         });
         chatInput.value = '';
       }
     }
   });
 
-  // Prikazivanje poruka sa stilovima
+  // Prikaz poruke
   socket.on('message', (data) => {
     const messageElement = document.createElement('div');
     messageElement.textContent = `${data.username}: ${data.message}`;
-    messageElement.style.color = data.color; // Boja poruke
-    messageElement.style.fontWeight = 'bold'; // Default bold stil
-    messageElement.style.fontStyle = 'italic'; // Default italic stil
-    messageElement.dataset.username = data.username; // Čuvamo username za kasnije ažuriranje
+    messageElement.style.color = data.color;
+    messageElement.style.fontWeight = data.styles.bold ? 'bold' : 'normal';
+    messageElement.style.fontStyle = data.styles.italic ? 'italic' : 'normal';
     messageArea.appendChild(messageElement);
   });
 
-  // Upravljanje korisnicima (prikaz novih korisnika i odjavljivanje)
+  // Dodavanje novog korisnika
   socket.on('userConnected', (username) => {
-    addUserToList(username);
+    addUserToList(username, '#808080'); // Podrazumevana boja
   });
 
+  // Uklanjanje korisnika
   socket.on('userDisconnected', (username) => {
     const userElements = Array.from(usersDiv.children);
     userElements.forEach((el) => {
