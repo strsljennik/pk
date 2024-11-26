@@ -1,79 +1,55 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const boldBtn = document.getElementById("boldBtn");
-    const italicBtn = document.getElementById("italicBtn");
-    const colorBtn = document.getElementById("colorBtn");
-    const colorPicker = document.getElementById("colorPicker");
-    const chatInput = document.getElementById("chatInput");
-    const messageArea = document.getElementById("messageArea");
-    const usersDiv = document.getElementById("users");
-    const nicknameDiv = document.getElementById("nickname");
-    const guestDiv = document.getElementById("guest");
+document.addEventListener('DOMContentLoaded', function () {
+  const socket = io();
 
-    let selectedColor = "#808080"; // Podrazumevana boja
-    let isBold = false;
-    let isItalic = false;
+  const boldBtn = document.getElementById('boldBtn');
+  const italicBtn = document.getElementById('italicBtn');
+  const colorPicker = document.getElementById('colorPicker');
+  const chatInput = document.getElementById('chatInput');
+  const messageArea = document.getElementById('messageArea');
 
-    // Funkcija za generisanje imena gosta
-    function generateGuestName() {
-        return "Gost-" + Math.floor(Math.random() * 10000);
+  let selectedColor = '#808080';
+  let isBold = false;
+  let isItalic = false;
+
+  // Postavljanje početnih vrednosti
+  socket.on('welcome', ({ guestName, color }) => {
+    selectedColor = color;
+    console.log(`Dobrodošao, ${guestName}!`);
+  });
+
+  // Rukovanje bold/italic stilovima
+  boldBtn.addEventListener('click', () => {
+    isBold = !isBold;
+    chatInput.style.fontWeight = isBold ? 'bold' : 'normal';
+  });
+
+  italicBtn.addEventListener('click', () => {
+    isItalic = !isItalic;
+    chatInput.style.fontStyle = isItalic ? 'italic' : 'normal';
+  });
+
+  // Promena boje
+  colorPicker.addEventListener('input', (e) => {
+    selectedColor = e.target.value;
+    chatInput.style.color = selectedColor;
+  });
+
+  // Slanje poruke
+  chatInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const message = chatInput.value.trim();
+      if (message) {
+        socket.emit('chatMessage', message);
+        chatInput.value = '';
+      }
     }
+  });
 
-    // Funkcija za dodavanje gosta u listu
-    function addGuest() {
-        const guestName = generateGuestName();
-        const guestElement = document.createElement("div");
-        guestElement.textContent = guestName;
-        guestElement.classList.add("guest"); // Dodajemo CSS klasu
-        guestDiv.appendChild(guestElement);
-    }
-
-    // Funkcija za primenu boje u unosu poruke
-    colorPicker.addEventListener("input", function() {
-        selectedColor = colorPicker.value;
-        chatInput.style.color = selectedColor; // Postavljamo boju u polje za unos
-    });
-
-    // Funkcija za primenu bold i italic stila u unosu poruke
-    boldBtn.addEventListener("click", function() {
-        isBold = !isBold;
-        updateMessageStyle();
-    });
-
-    italicBtn.addEventListener("click", function() {
-        isItalic = !isItalic;
-        updateMessageStyle();
-    });
-
-    // Ažuriranje stila poruke u unosu
-    function updateMessageStyle() {
-        chatInput.style.fontWeight = isBold ? "bold" : "normal";
-        chatInput.style.fontStyle = isItalic ? "italic" : "normal";
-    }
-
-    // Funkcija za slanje poruke sa odabranim stilovima i bojama
-    function sendMessage(message, userName) {
-        const messageElement = document.createElement("div");
-        messageElement.textContent = `${userName}: ${message}`;
-        messageElement.style.color = selectedColor;
-        messageElement.style.fontWeight = isBold ? "bold" : "normal";
-        messageElement.style.fontStyle = isItalic ? "italic" : "normal";
-        messageArea.appendChild(messageElement);
-    }
-
-    // Dodavanje korisnika u listu (registrovan korisnik)
-    function addUser(username) {
-        const userElement = document.createElement("div");
-        userElement.textContent = username;
-        userElement.classList.add("user"); // Dodajemo CSS klasu
-        nicknameDiv.appendChild(userElement);
-    }
-
-    // Dodavanje početnog gosta
-    addGuest();
-
-    // Primer slanja poruke
-    sendMessage("Pozdrav svima!", "Gost-5555");
-
-    // Dodavanje korisnika (primer)
-    addUser("RegistrovaniKorisnik");
+  // Prikaz poruka
+  socket.on('message', (formattedMessage) => {
+    const messageElement = document.createElement('div');
+    messageElement.textContent = formattedMessage;
+    messageArea.appendChild(messageElement);
+  });
 });
