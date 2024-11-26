@@ -6,16 +6,27 @@ document.addEventListener('DOMContentLoaded', function () {
   const colorPicker = document.getElementById('colorPicker');
   const chatInput = document.getElementById('chatInput');
   const messageArea = document.getElementById('messageArea');
+  const usersDiv = document.getElementById('users');
 
-  let selectedColor = '#808080';
   let isBold = false;
   let isItalic = false;
+  let selectedColor = '#808080';
+  let guestName = '';
 
-  // Postavljanje početnih vrednosti
-  socket.on('welcome', ({ guestName, color }) => {
-    selectedColor = color;
-    console.log(`Dobrodošao, ${guestName}!`);
+  // Dobrodošlica
+  socket.on('welcome', (data) => {
+    guestName = data.guestName;
+    selectedColor = data.guestColor;
+    chatInput.style.color = selectedColor;
+    addUserToList(guestName);
   });
+
+  // Dodavanje korisnika u listu
+  function addUserToList(username) {
+    const userElement = document.createElement('div');
+    userElement.textContent = username;
+    usersDiv.appendChild(userElement);
+  }
 
   // Rukovanje bold/italic stilovima
   boldBtn.addEventListener('click', () => {
@@ -40,16 +51,33 @@ document.addEventListener('DOMContentLoaded', function () {
       event.preventDefault();
       const message = chatInput.value.trim();
       if (message) {
-        socket.emit('chatMessage', message);
+        socket.emit('chatMessage', {
+          username: guestName,
+          message,
+          color: selectedColor,
+          styles: { bold: isBold, italic: isItalic },
+        });
         chatInput.value = '';
       }
     }
   });
 
-  // Prikaz poruka
-  socket.on('message', (formattedMessage) => {
+  // Prikazivanje poruka
+  socket.on('message', (data) => {
     const messageElement = document.createElement('div');
-    messageElement.textContent = formattedMessage;
+    messageElement.textContent = `${data.username}: ${data.message}`;
+    messageElement.style.color = data.color;
+    messageElement.style.fontWeight = data.styles.bold ? 'bold' : 'normal';
+    messageElement.style.fontStyle = data.styles.italic ? 'italic' : 'normal';
     messageArea.appendChild(messageElement);
+  });
+
+  // Upravljanje korisnicima
+  socket.on('userConnected', (username) => addUserToList(username));
+  socket.on('userDisconnected', (username) => {
+    const userElements = Array.from(usersDiv.children);
+    userElements.forEach((el) => {
+      if (el.textContent === username) usersDiv.removeChild(el);
+    });
   });
 });
