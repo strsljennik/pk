@@ -1,7 +1,12 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const { generateGuestNumber, formatMessage, getDefaultColor, getDefaultStyle } = require('./user'); // Import user.js modula
+const { 
+  generateGuestNumber, 
+  formatMessageWithColorStyle, 
+  getDefaultColor, 
+  getDefaultStyle 
+} = require('./user'); // Import user.js modula
 
 const app = express();
 const server = http.createServer(app);
@@ -10,10 +15,16 @@ const io = socketIo(server);
 // Postavljamo statički folder za index.html i ostale statičke fajlove
 app.use(express.static('public'));
 
+// Skladištenje korisnika u memoriji
+const users = {};
+
 io.on('connection', (socket) => {
   const guestName = generateGuestNumber();
   const guestColor = getDefaultColor(); // Default boja
   const guestStyle = getDefaultStyle(); // Default stil (bold, italic)
+
+  // Skladišti podatke o korisniku
+  users[socket.id] = { username: guestName, color: guestColor, styles: guestStyle };
 
   // Emitovanje korisniku dobrodošlice i inicijalnih podataka
   socket.emit('welcome', { guestName, guestColor, guestStyle });
@@ -23,14 +34,21 @@ io.on('connection', (socket) => {
 
   // Prijem poruka sa stilom i bojom
   socket.on('chatMessage', (data) => {
-    const formattedMessage = formatMessage(data.username, data.message);
-    io.emit('message', formattedMessage); // Emitovanje poruke svim korisnicima
+    const user = users[socket.id]; // Dohvati podatke o korisniku
+    if (user) {
+      const formattedMessage = formatMessageWithColorStyle(user.username, data.message, user.color, user.styles);
+      io.emit('message', formattedMessage); // Emitovanje poruke svim korisnicima
+    }
   });
 
   // Disconnect događaj
   socket.on('disconnect', () => {
-    io.emit('userDisconnected', guestName); // Emitovanje svim korisnicima da se korisnik isključio
-    console.log(`${guestName} disconnected`);
+    const user = users[socket.id];
+    if (user) {
+      io.emit('userDisconnected', user.username); // Emitovanje svim korisnicima da se korisnik isključio
+      delete users[socket.id]; // Ukloni korisnika iz memorije
+      console.log(`${user.username} disconnected`);
+    }
   });
 
   // Opcionalno: Za testiranje
