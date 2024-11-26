@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const boldBtn = document.getElementById('boldBtn');
   const italicBtn = document.getElementById('italicBtn');
   const colorPicker = document.getElementById('colorPicker');
+  const colorBtn = document.getElementById('colorBtn');  // Dugme za color picker
   const chatInput = document.getElementById('chatInput');
   const messageArea = document.getElementById('messageArea');
   const usersDiv = document.getElementById('users');
@@ -41,10 +42,15 @@ document.addEventListener('DOMContentLoaded', function () {
     chatInput.style.fontStyle = isItalic ? 'italic' : 'normal';
   });
 
+  // Otvoriti color picker kada korisnik klikne na dugme
+  colorBtn.addEventListener('click', function() {
+    colorPicker.click();  // Otvori color picker
+  });
+
   // Promena boje
   colorPicker.addEventListener('input', (e) => {
-    selectedColor = e.target.value;
-    chatInput.style.color = selectedColor;
+    selectedColor = e.target.value;  // Uzmi novu boju
+    chatInput.style.color = selectedColor;  // Postavi boju na chat input
   });
 
   // Slanje poruke
@@ -78,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
   socket.on('userConnected', (username) => {
     addUserToList(username);
   });
+
   socket.on('userDisconnected', (username) => {
     const userElements = Array.from(usersDiv.children);
     userElements.forEach((el) => {
