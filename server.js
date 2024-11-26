@@ -2,7 +2,12 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const { getUsers, users } = require('./user'); // Import user.js modula
+const {
+  generateGuestNumber,
+  getDefaultColor,
+  getDefaultStyle,
+  formatMessage,
+} = require('./user'); // Import user.js modula
 
 // Kreiramo aplikaciju
 const app = express();
@@ -17,18 +22,27 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
-// Povezivanje sa socket-om
+// Socket.io događaji
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  console.log('Novi korisnik se povezao.');
 
-  // Ovde možeš dodati više događaja za socket
+  // Dodeli gosta korisniku
+  const guestName = generateGuestNumber();
+  socket.emit('welcome', { guestName, color: getDefaultColor() });
+
+  // Rukovanje porukama
+  socket.on('chatMessage', (msg) => {
+    const formattedMsg = formatMessage(guestName, msg);
+    io.emit('message', formattedMsg);
+  });
+
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
+    console.log(`${guestName} se odjavio.`);
   });
 });
 
 // Pokretanje servera na definisanom portu
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server je pokrenut na portu ${PORT}`);
+  console.log(`Server je pokrenut na portu ${PORT}`);
 });
