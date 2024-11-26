@@ -21,9 +21,9 @@ io.on('connection', (socket) => {
   // Emitovanje svim korisnicima o novom korisniku
   io.emit('userConnected', guestName);
 
-  // Prijem poruka sa stajl i boje
+  // Prijem poruka sa stilom i bojom
   socket.on('chatMessage', (data) => {
-    const formattedMessage = formatMessage(data.username, data.message, data.color, data.styles);
+    const formattedMessage = formatMessage(data.username, data.message);
     io.emit('message', formattedMessage); // Emitovanje poruke svim korisnicima
   });
 
