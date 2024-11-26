@@ -1,15 +1,8 @@
-// Uvozimo potrebne module
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const {
-  generateGuestNumber,
-  getDefaultColor,
-  getDefaultStyle,
-  formatMessage,
-} = require('./user'); // Import user.js modula
+const { generateGuestNumber, formatMessage, getDefaultColor, getDefaultStyle } = require('./user'); // Import user.js modula
 
-// Kreiramo aplikaciju
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -17,32 +10,35 @@ const io = socketIo(server);
 // Postavljamo statički folder za index.html i ostale statičke fajlove
 app.use(express.static('public'));
 
-// Koristimo rutu za osnovnu stranicu (index.html)
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
-
-// Socket.io događaji
 io.on('connection', (socket) => {
-  console.log('Novi korisnik se povezao.');
-
-  // Dodeli gosta korisniku
   const guestName = generateGuestNumber();
-  socket.emit('welcome', { guestName, color: getDefaultColor() });
+  const guestColor = getDefaultColor(); // Default boja
+  const guestStyle = getDefaultStyle(); // Default stil (bold, italic)
 
-  // Rukovanje porukama
-  socket.on('chatMessage', (msg) => {
-    const formattedMsg = formatMessage(guestName, msg);
-    io.emit('message', formattedMsg);
+  // Emitovanje korisniku dobrodošlice i inicijalnih podataka
+  socket.emit('welcome', { guestName, guestColor, guestStyle });
+
+  // Emitovanje svim korisnicima o novom korisniku
+  io.emit('userConnected', guestName);
+
+  // Prijem poruka sa stajl i boje
+  socket.on('chatMessage', (data) => {
+    const formattedMessage = formatMessage(data.username, data.message, data.color, data.styles);
+    io.emit('message', formattedMessage); // Emitovanje poruke svim korisnicima
   });
 
+  // Disconnect događaj
   socket.on('disconnect', () => {
-    console.log(`${guestName} se odjavio.`);
+    io.emit('userDisconnected', guestName); // Emitovanje svim korisnicima da se korisnik isključio
+    console.log(`${guestName} disconnected`);
   });
+
+  // Opcionalno: Za testiranje
+  console.log(`${guestName} connected`);
 });
 
 // Pokretanje servera na definisanom portu
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log(`Server je pokrenut na portu ${PORT}`);
 });
