@@ -1,9 +1,9 @@
-// Generišemo korisnički broj za gosta
-function generateGuestNumber() {
-  return `Gost-${Math.floor(Math.random() * 10000)}`;
+// Generisanje korisničkog broja za USER
+function generateUserNumber() {
+  return `USER-${Math.floor(Math.random() * 10000)}`; // Format: USER-XXXX
 }
 
-// Početna boja za goste (siva)
+// Početna boja za korisnika (siva)
 function getDefaultColor() {
   return '#808080'; // Siva boja
 }
@@ -24,7 +24,7 @@ function formatMessage(username, message) {
   return `${username} - ${message} - ${berlinTime}`;
 }
 
-// Emitovanje poruke sa stilom i bojom
+// Funkcija za slanje poruke sa stilom i bojom
 function formatMessageWithColorStyle(username, message, color, styles) {
   const berlinTime = new Date().toLocaleString('en-GB', {
     timeZone: 'Europe/Berlin',
@@ -36,38 +36,10 @@ function formatMessageWithColorStyle(username, message, color, styles) {
   };
 }
 
-// Funkcija za promenu boje korisničkog imena i poruka
-function changeUserColor(userId, color) {
-  // Update korisničkog imena u listi
-  const userElement = document.getElementById(userId);
-  if (userElement) {
-    userElement.style.color = color;
-  }
-
-  // Takođe promeniti boju korisničkog imena u porukama
-  const messages = document.querySelectorAll(`.message[data-user="${userId}"]`);
-  messages.forEach(message => {
-    message.style.color = color;
-  });
-
-  // Update boje na inputu za unos poruke
-  const inputField = document.getElementById('chatInput');
-  inputField.style.color = color;
-}
-
-// Slanje poruke sa Enter
-function handleSendMessage(socket, username, message, color, styles) {
-  const formattedMessage = formatMessageWithColorStyle(username, message, color, styles);
-  socket.emit('chatMessage', formattedMessage);
-}
-
-// Export funkcija za korišćenje u serveru
 module.exports = {
-  generateGuestNumber,
+  generateUserNumber,
   getDefaultColor,
   getDefaultStyle,
   formatMessage,
-  formatMessageWithColorStyle,
-  changeUserColor,
-  handleSendMessage
+  formatMessageWithColorStyle
 };
