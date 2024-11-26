@@ -24,10 +24,43 @@ function formatMessage(username, message) {
   return `${username} - ${message} - ${berlinTime}`;
 }
 
+// Emitovanje poruke sa stilom i bojom
+function formatMessageWithColorStyle(username, message, color, styles) {
+  const berlinTime = new Date().toLocaleString('en-GB', {
+    timeZone: 'Europe/Berlin',
+  });
+  return {
+    message: `${username} - ${message} - ${berlinTime}`,
+    color: color,
+    styles: styles
+  };
+}
+
+// Funkcija za promenu boje korisničkog imena i poruka
+function changeUserColor(userId, color) {
+  // Update korisničkog imena u listi
+  const userElement = document.getElementById(userId);
+  if (userElement) {
+    userElement.style.color = color;
+  }
+
+  // Takođe promeniti boju korisničkog imena u porukama
+  const messages = document.querySelectorAll(`.message[data-user="${userId}"]`);
+  messages.forEach(message => {
+    message.style.color = color;
+  });
+  
+  // Update boje na inputu za unos poruke
+  const inputField = document.getElementById('chatInput');
+  inputField.style.color = color;
+}
+
 // Export funkcija za korišćenje u serveru
 module.exports = {
   generateGuestNumber,
   getDefaultColor,
   getDefaultStyle,
   formatMessage,
+  formatMessageWithColorStyle,
+  changeUserColor
 };
