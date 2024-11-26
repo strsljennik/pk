@@ -12,27 +12,27 @@ app.use(express.static('public'));
 const users = {}; // Skladištenje korisnika po socket ID-u
 
 io.on('connection', (socket) => {
-  const userName = generateUserNumber(); // Generiši korisnički broj
+  const user = generateUserNumber(); // Generiši korisnički broj
   const userColor = getDefaultColor(); // Podrazumevana boja
   const userStyle = getDefaultStyle(); // Podrazumevani stil
 
-  users[socket.id] = { username: userName, color: userColor, style: userStyle };
+  users[socket.id] = { users: user, color: userColor, style: userStyle };
 
-  socket.emit('welcome', { userName, userColor, userStyle });
-  io.emit('userConnected', userName);
+  socket.emit('welcome', { user, userColor, userStyle });
+  io.emit('userConnected', user);
 
   socket.on('chatMessage', (data) => {
-    const user = users[socket.id];
-    if (user) {
-      const formattedMessage = formatMessageWithColorStyle(user.username, data.message, user.color, user.style);
+    const currentUser = users[socket.id];
+    if (currentUser) {
+      const formattedMessage = formatMessageWithColorStyle(currentUser.user, data.message, currentUser.color, currentUser.style);
       io.emit('message', formattedMessage);
     }
   });
 
   socket.on('disconnect', () => {
-    const user = users[socket.id];
-    if (user) {
-      io.emit('userDisconnected', user.username);
+    const currentUser = users[socket.id];
+    if (currentUser) {
+      io.emit('userDisconnected', currentUser.username);
       delete users[socket.id];
     }
   });
