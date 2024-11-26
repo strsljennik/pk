@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const { generateGuestNumber, formatMessageWithColorStyle, getDefaultColor, getDefaultStyle } = require('./user');
+const { generateUserNumber, formatMessageWithColorStyle, getDefaultColor, getDefaultStyle } = require('./user');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,14 +12,14 @@ app.use(express.static('public'));
 const users = {}; // Skladištenje korisnika po socket ID-u
 
 io.on('connection', (socket) => {
-  const guestName = generateGuestNumber();
-  const guestColor = getDefaultColor();
-  const guestStyle = getDefaultStyle();
+  const userName = generateUserNumber(); // Generiši korisnički broj
+  const userColor = getDefaultColor(); // Podrazumevana boja
+  const userStyle = getDefaultStyle(); // Podrazumevani stil
 
-  users[socket.id] = { username: guestName, color: guestColor, style: guestStyle };
+  users[socket.id] = { username: userName, color: userColor, style: userStyle };
 
-  socket.emit('welcome', { guestName, guestColor, guestStyle });
-  io.emit('userConnected', guestName);
+  socket.emit('welcome', { userName, userColor, userStyle });
+  io.emit('userConnected', userName);
 
   socket.on('chatMessage', (data) => {
     const user = users[socket.id];
