@@ -1,47 +1,32 @@
 document.addEventListener('DOMContentLoaded', function () {
   const socket = io();
 
-  const boldBtn = document.getElementById('boldBtn');
-  const italicBtn = document.getElementById('italicBtn');
   const colorPicker = document.getElementById('colorPicker');
-  const colorBtn = document.getElementById('colorBtn');  // Dugme za color picker
+  const colorBtn = document.getElementById('colorBtn');
   const chatInput = document.getElementById('chatInput');
   const messageArea = document.getElementById('messageArea');
   const usersDiv = document.getElementById('users');
 
-  let isBold = false;
-  let isItalic = false;
   let selectedColor = '#808080'; // Default color
   let guestName = '';
-
+  
   // Dobrodošlica
   socket.on('welcome', (data) => {
     guestName = data.guestName;
     selectedColor = data.guestColor;
     chatInput.style.color = selectedColor;
-    addUserToList(guestName);
+    addUserToList(guestName); // Dodavanje gosta u listu
   });
 
-  // Dodavanje korisnika u listu i postavljanje boje za ime
+  // Dodavanje korisnika u listu sa default bold i italic stilovima
   function addUserToList(username) {
     const userElement = document.createElement('div');
     userElement.textContent = username;
-    userElement.style.fontWeight = isBold ? 'bold' : 'normal'; // Stilizovanje korisničkog imena
-    userElement.style.fontStyle = isItalic ? 'italic' : 'normal'; // Stilizovanje korisničkog imena
+    userElement.style.fontWeight = 'bold'; // Default bold stil
+    userElement.style.fontStyle = 'italic'; // Default italic stil
     userElement.style.color = selectedColor;  // Postavljanje boje korisničkog imena
     usersDiv.appendChild(userElement);
   }
-
-  // Rukovanje bold/italic stilovima
-  boldBtn.addEventListener('click', () => {
-    isBold = !isBold;
-    chatInput.style.fontWeight = isBold ? 'bold' : 'normal';
-  });
-
-  italicBtn.addEventListener('click', () => {
-    isItalic = !isItalic;
-    chatInput.style.fontStyle = isItalic ? 'italic' : 'normal';
-  });
 
   // Otvoriti color picker kada korisnik klikne na dugme
   colorBtn.addEventListener('click', function() {
@@ -72,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
           username: guestName,
           message,
           color: selectedColor,
-          styles: { bold: isBold, italic: isItalic },
+          styles: { bold: true, italic: true }, // Poruka je po defaultu bold i italic
         });
         chatInput.value = '';
       }
@@ -84,8 +69,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const messageElement = document.createElement('div');
     messageElement.textContent = `${data.username}: ${data.message}`;
     messageElement.style.color = data.color;  // Boja poruke
-    messageElement.style.fontWeight = data.styles.bold ? 'bold' : 'normal';
-    messageElement.style.fontStyle = data.styles.italic ? 'italic' : 'normal';
+    messageElement.style.fontWeight = 'bold'; // Default bold stil
+    messageElement.style.fontStyle = 'italic'; // Default italic stil
     messageArea.appendChild(messageElement);
   });
 
