@@ -1,73 +1,44 @@
-// Generišemo korisnički broj za gosta
-function generateGuestNumber() {
-  return `Gost-${Math.floor(Math.random() * 10000)}`;
-}
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const { generateGuestNumber, formatMessage, getDefaultColor, getDefaultStyle } = require('./user'); // Import user.js modula
 
-// Početna boja za goste (siva)
-function getDefaultColor() {
-  return '#808080'; // Siva boja
-}
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-// Default stil (Bold i Italic)
-function getDefaultStyle() {
-  return {
-    fontWeight: 'bold',
-    fontStyle: 'italic',
-  };
-}
+// Postavljamo statički folder za index.html i ostale statičke fajlove
+app.use(express.static('public'));
 
-// Formatiranje poruke: user-poruka-berlin time
-function formatMessage(username, message) {
-  const berlinTime = new Date().toLocaleString('en-GB', {
-    timeZone: 'Europe/Berlin',
+io.on('connection', (socket) => {
+  const guestName = generateGuestNumber();
+  const guestColor = getDefaultColor(); // Default boja
+  const guestStyle = getDefaultStyle(); // Default stil (bold, italic)
+
+  // Emitovanje korisniku dobrodošlice i inicijalnih podataka
+  socket.emit('welcome', { guestName, guestColor, guestStyle });
+
+  // Emitovanje svim korisnicima o novom korisniku
+  io.emit('userConnected', guestName);
+
+  // Prijem poruka sa stajl i boje
+  socket.on('chatMessage', (data) => {
+    const formattedMessage = formatMessage(data.username, data.message, data.color, data.styles);
+    io.emit('message', formattedMessage); // Emitovanje poruke svim korisnicima
   });
-  return `${username} - ${message} - ${berlinTime}`;
-}
 
-// Emitovanje poruke sa stilom i bojom
-function formatMessageWithColorStyle(username, message, color, styles) {
-  const berlinTime = new Date().toLocaleString('en-GB', {
-    timeZone: 'Europe/Berlin',
+  // Disconnect događaj
+  socket.on('disconnect', () => {
+    io.emit('userDisconnected', guestName); // Emitovanje svim korisnicima da se korisnik isključio
+    console.log(`${guestName} disconnected`);
   });
-  return {
-    message: `${username} - ${message} - ${berlinTime}`,
-    color: color,
-    styles: styles
-  };
-}
 
-// Funkcija za promenu boje korisničkog imena i poruka
-function changeUserColor(userId, color) {
-  // Update korisničkog imena u listi
-  const userElement = document.getElementById(userId);
-  if (userElement) {
-    userElement.style.color = color;
-  }
+  // Opcionalno: Za testiranje
+  console.log(`${guestName} connected`);
+});
 
-  // Takođe promeniti boju korisničkog imena u porukama
-  const messages = document.querySelectorAll(`.message[data-user="${userId}"]`);
-  messages.forEach(message => {
-    message.style.color = color;
-  });
-  
-  // Update boje na inputu za unos poruke
-  const inputField = document.getElementById('chatInput');
-  inputField.style.color = color;
-}
-
-// Slanje poruke sa Enter
-function handleSendMessage(socket, username, message, color, styles) {
-  const formattedMessage = formatMessageWithColorStyle(username, message, color, styles);
-  socket.emit('chatMessage', formattedMessage);
-}
-
-// Export funkcija za korišćenje u serveru
-module.exports = {
-  generateGuestNumber,
-  getDefaultColor,
-  getDefaultStyle,
-  formatMessage,
-  formatMessageWithColorStyle,
-  changeUserColor,
-  handleSendMessage
-};
+// Pokretanje servera na definisanom portu
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server je pokrenut na portu ${PORT}`);
+});
