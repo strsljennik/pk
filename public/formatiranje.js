@@ -22,12 +22,13 @@ document.addEventListener('DOMContentLoaded', function () {
     addUserToList(guestName);
   });
 
-  // Dodavanje korisnika u listu
+  // Dodavanje korisnika u listu i postavljanje boje za ime
   function addUserToList(username) {
     const userElement = document.createElement('div');
     userElement.textContent = username;
     userElement.style.fontWeight = isBold ? 'bold' : 'normal'; // Stilizovanje korisničkog imena
     userElement.style.fontStyle = isItalic ? 'italic' : 'normal'; // Stilizovanje korisničkog imena
+    userElement.style.color = selectedColor;  // Postavljanje boje korisničkog imena
     usersDiv.appendChild(userElement);
   }
 
@@ -47,10 +48,18 @@ document.addEventListener('DOMContentLoaded', function () {
     colorPicker.click();  // Otvori color picker
   });
 
-  // Promena boje
+  // Promena boje za chat input, poruku i ime korisnika
   colorPicker.addEventListener('input', (e) => {
     selectedColor = e.target.value;  // Uzmi novu boju
-    chatInput.style.color = selectedColor;  // Postavi boju na chat input
+
+    // Postavljanje boje za chat input
+    chatInput.style.color = selectedColor;
+
+    // Postavljanje boje za sve nove korisnike u listi
+    const users = usersDiv.children;
+    for (let user of users) {
+      user.style.color = selectedColor;
+    }
   });
 
   // Slanje poruke
@@ -74,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
   socket.on('message', (data) => {
     const messageElement = document.createElement('div');
     messageElement.textContent = `${data.username}: ${data.message} - ${data.timestamp}`; // Formatiranje sa vremenom
-    messageElement.style.color = data.color;
+    messageElement.style.color = data.color;  // Boja poruke
     messageElement.style.fontWeight = data.styles.bold ? 'bold' : 'normal';
     messageElement.style.fontStyle = data.styles.italic ? 'italic' : 'normal';
     messageArea.appendChild(messageElement);
