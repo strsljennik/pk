@@ -79,6 +79,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Povezivanje događaja za unos poruke
+document.getElementById('chatInput').addEventListener('keydown', function(event) {
+  const socket = {}; // Zamenite sa vašim socket objektom
+  const username = 'User'; // Zamenite sa stvarnim korisničkim imenom
+  const message = event.target.value;
+  const color = getDefaultColor();
+  const styles = getDefaultStyle();
+
+  if (event.key === 'Enter') {
+    handleSendMessage(socket, username, message, color, styles);
+    event.target.value = ''; // Očistiti input nakon slanja
+  }
+
   // Prikazivanje poruka sa stilovima
   socket.on('message', (data) => {
     const messageElement = document.createElement('div');
