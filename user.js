@@ -1,9 +1,6 @@
 // Korišćenje modula na klijent strani
 const { handleSendMessage } = require('./path/to/your/module');
 
-// Povezivanje na socket
-const socket = io();
-
 const chatInput = document.getElementById('chatInput');
 let guestName = 'Guest-1234'; // Na primer, ovo se dinamički menja
 let selectedColor = '#808080'; // Početna boja
