@@ -11,9 +11,9 @@ const io = socketIo(server);
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {
-  const guestName = generateGuestNumber();  // Generisanje broja gosta
-  const guestColor = getDefaultColor();    // Default boja za gosta
-  const guestStyle = getDefaultStyle();    // Default stil (bold, italic)
+  const guestName = generateGuestNumber();
+  const guestColor = getDefaultColor(); // Default boja
+  const guestStyle = getDefaultStyle(); // Default stil (bold, italic)
 
   // Emitovanje korisniku dobrodošlice i inicijalnih podataka
   socket.emit('welcome', { guestName, guestColor, guestStyle });
@@ -21,9 +21,8 @@ io.on('connection', (socket) => {
   // Emitovanje svim korisnicima o novom korisniku
   io.emit('userConnected', guestName);
 
-  // Prijem poruka sa stilom i bojom
+  // Prijem poruka sa stajl i boje
   socket.on('chatMessage', (data) => {
-    // Formatiramo poruku uzimajući username, poruku, boje i stilove
     const formattedMessage = formatMessage(data.username, data.message, data.color, data.styles);
     io.emit('message', formattedMessage); // Emitovanje poruke svim korisnicima
   });
